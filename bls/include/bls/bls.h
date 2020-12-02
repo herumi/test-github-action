@@ -18,17 +18,17 @@
 	#define MCLBN_COMPILED_TIME_VAR ((MCLBN_FR_UNIT_SIZE) * 10 + (MCLBN_FP_UNIT_SIZE) + BLS_COMPILER_TIME_VAR_ADJ)
 #endif
 
-#ifdef _MSC_VER
+#ifdef _WIN32
 	#ifdef BLS_DONT_EXPORT
 		#define BLS_DLL_API
 	#else
 		#ifdef BLS_DLL_EXPORT
 			#define BLS_DLL_API __declspec(dllexport)
 		#else
-			#define BLS_DLL_API __declspec(dllimport)
+			#define BLS_DLL_API //__declspec(dllimport)
 		#endif
 	#endif
-	#ifndef BLS_NO_AUTOLINK
+	#if defined(_MSC_VER) && !defined(BLS_NO_AUTOLINK)
 		#if MCLBN_FP_UNIT_SIZE == 4
 			#pragma comment(lib, "bls256.lib")
 		#elif (MCLBN_FP_UNIT_SIZE == 6) && (MCLBN_FR_UNIT_SIZE == 4)
@@ -107,6 +107,14 @@ BLS_DLL_API int blsSetETHmode(int mode);
 */
 BLS_DLL_API void blsSetETHserialization(int ETHserialization);
 
+/*
+	set map-to-function to mode
+	MCL_MAP_TO_MODE_ORIGINAL ; for backward compatibility
+	MCL_MAP_TO_MODE_HASH_TO_CURVE ; irtf-cfrg-hash-to-curve
+	return 0 if success else -1
+*/
+BLS_DLL_API int blsSetMapToMode(int mode);
+
 BLS_DLL_API void blsIdSetInt(blsId *id, int x);
 
 // sec = buf & (1 << bitLen(r)) - 1
@@ -122,8 +130,35 @@ BLS_DLL_API void blsGetPublicKey(blsPublicKey *pub, const blsSecretKey *sec);
 // calculate the has of m and sign the hash
 BLS_DLL_API void blsSign(blsSignature *sig, const blsSecretKey *sec, const void *m, mclSize size);
 
-// return 1 if valid
+// return 1 if valid else 0
+// @remark return 0 if pub is zero for BLS_ETH
 BLS_DLL_API int blsVerify(const blsSignature *sig, const blsPublicKey *pub, const void *m, mclSize size);
+/*
+	return 1 if blsVerify(&sigVec[i], &pubVec[i], &msgVec[i * msgSize]) returns 1 for all i = 0, ..., n-1
+	@param randVec [in] non-zero randSize * n byte array
+	@note for only BLS_ETH
+	sig = sum_i sigVec[i] * randVec[i]
+	pubVec[i] *= randVec[i]
+	return blsAggregateVerifyNoCheck(sig, pubVec, msgVec, msgSize, n);
+	@remark return 0 if some pubVec[i] is zero
+	sigVec may be normalized
+*/
+BLS_DLL_API int blsMultiVerify(blsSignature *sigVec, const blsPublicKey *pubVec, const void *msgVec, mclSize msgSize, const void *randVec, mclSize randSize, mclSize n, int threadN);
+
+/*
+	subroutine of blsMultiVerify
+	e = prod_i millerLoop(pubVec[i] * randVec[i], Hash(msgVec[i]))
+	aggSig = sum_i sigVec[i] * randVec[i]
+	@remark set *e = 0 if some pubVec[i] is zero
+	sigVec may be normalized
+*/
+BLS_DLL_API void blsMultiVerifySub(mclBnGT *e, blsSignature *aggSig, blsSignature *sigVec, const blsPublicKey *pubVec, const char *msg, mclSize msgSize, const char *randVec, mclSize randSize, mclSize n);
+
+/*
+	subroutine of blsMultiVerify
+	return FE(e * ML(P, -aggSig)) == 1 ? 1 : 0
+*/
+BLS_DLL_API int blsMultiVerifyFinal(const mclBnGT *e, const blsSignature *aggSig);
 
 // aggSig = sum of sigVec[0..n]
 BLS_DLL_API void blsAggregateSignature(blsSignature *aggSig, const blsSignature *sigVec, mclSize n);
@@ -240,6 +275,20 @@ BLS_DLL_API void blsSecretKeySub(blsSecretKey *sec, const blsSecretKey *rhs);
 BLS_DLL_API void blsPublicKeySub(blsPublicKey *pub, const blsPublicKey *rhs);
 BLS_DLL_API void blsSignatureSub(blsSignature *sig, const blsSignature *rhs);
 
+// neg
+BLS_DLL_API void blsSecretKeyNeg(blsSecretKey *x);
+BLS_DLL_API void blsPublicKeyNeg(blsPublicKey *x);
+BLS_DLL_API void blsSignatureNeg(blsSignature *x);
+
+// mul y *= x
+BLS_DLL_API void blsSecretKeyMul(blsSecretKey *y, const blsSecretKey *x);
+BLS_DLL_API void blsPublicKeyMul(blsPublicKey *y, const blsSecretKey *x);
+BLS_DLL_API void blsSignatureMul(blsSignature *y, const blsSecretKey *x);
+
+// x may be normalized, so it is not a const pointer
+BLS_DLL_API void blsPublicKeyMulVec(blsPublicKey *z, blsPublicKey *x, const blsSecretKey *y, mclSize n);
+BLS_DLL_API void blsSignatureMulVec(blsSignature *z, blsSignature *x, const blsSecretKey *y, mclSize n);
+
 // not thread safe version (old blsInit)
 BLS_DLL_API int blsInitNotThreadSafe(int curve, int compiledTimeVar);
 
@@ -263,6 +312,8 @@ BLS_DLL_API int blsGetFrByteSize(void);
 
 // get a generator of PublicKey
 BLS_DLL_API void blsGetGeneratorOfPublicKey(blsPublicKey *pub);
+// set a generator of PublicKey
+BLS_DLL_API int blsSetGeneratorOfPublicKey(const blsPublicKey *pub);
 
 // return 0 if success
 BLS_DLL_API int blsIdSetDecStr(blsId *id, const char *buf, mclSize bufSize);
@@ -312,6 +363,8 @@ BLS_DLL_API mclSize blsIdGetLittleEndian(void *buf, mclSize maxBufSize, const bl
 // return 0 if success
 BLS_DLL_API int blsSecretKeySetDecStr(blsSecretKey *sec, const char *buf, mclSize bufSize);
 BLS_DLL_API int blsSecretKeySetHexStr(blsSecretKey *sec, const char *buf, mclSize bufSize);
+BLS_DLL_API int blsPublicKeySetHexStr(blsPublicKey *pub, const char *buf, mclSize bufSize);
+BLS_DLL_API int blsSignatureSetHexStr(blsSignature *sig, const char *buf, mclSize bufSize);
 /*
 	return written byte size if success else 0
 */
@@ -322,9 +375,7 @@ BLS_DLL_API mclSize blsSecretKeyGetLittleEndian(void *buf, mclSize maxBufSize, c
 */
 BLS_DLL_API mclSize blsSecretKeyGetDecStr(char *buf, mclSize maxBufSize, const blsSecretKey *sec);
 BLS_DLL_API mclSize blsSecretKeyGetHexStr(char *buf, mclSize maxBufSize, const blsSecretKey *sec);
-BLS_DLL_API int blsPublicKeySetHexStr(blsPublicKey *pub, const char *buf, mclSize bufSize);
 BLS_DLL_API mclSize blsPublicKeyGetHexStr(char *buf, mclSize maxBufSize, const blsPublicKey *pub);
-BLS_DLL_API int blsSignatureSetHexStr(blsSignature *sig, const char *buf, mclSize bufSize);
 BLS_DLL_API mclSize blsSignatureGetHexStr(char *buf, mclSize maxBufSize, const blsSignature *sig);
 
 /*
