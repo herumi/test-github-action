@@ -78,26 +78,16 @@ jobs:
           git branch -av
           find .
 
-      - name: files
-        uses: softprops/action-gh-release@v1
-        with:
-          files: |
-            now.txt
-
       - name: Create Release
         id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        uses: "marvinpinto/action-automatic-releases@latest"
         with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
           tag_name: ${{ github.event.inputs.version }}
           release_name: ${{ github.event.inputs.version }}
-          # body: |
-          #   Changes in this Release
-          #   - First Change
-          #   - Second Change
-          draft: false
-          prerelease: false
+          files: |
+            *.a
+            *.txt
 
   delete-branch:
     runs-on: ubuntu-latest
