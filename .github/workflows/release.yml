@@ -78,6 +78,12 @@ jobs:
           git branch -av
           find .
 
+      - name: files
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            now.txt
+
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
