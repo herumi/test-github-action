@@ -85,21 +85,22 @@ jobs:
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           automatic_release_tag: "latest"
+          title: "$BRANCH_NAME"
           prerelease: false
 #          files: |
 #            *.a
 #            *.txt
 
-#  delete-branch:
-#    runs-on: ubuntu-latest
-#    needs: [ create-release ]
-#    if: always()
-#    steps:
-#      - name: Checkout code
-#        uses: actions/checkout@v3
-#      - name: Delete branch
-#        run: |
-#          git config user.name github-actions
-#          git config user.email github-actions@github.com
-#          git pull && git push origin -d "$BRANCH_NAME"
+  delete-branch:
+    runs-on: ubuntu-latest
+    needs: [ create-release ]
+    if: always()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Delete branch
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git pull && git push origin -d "$BRANCH_NAME"
 
