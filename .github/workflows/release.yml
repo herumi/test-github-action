@@ -85,7 +85,7 @@ jobs:
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           automatic_release_tag: "latest"
-          title: "$BRANCH_NAME"
+          title: "release-${{ github.event.inputs.version }}"
           prerelease: false
 #          files: |
 #            *.a
