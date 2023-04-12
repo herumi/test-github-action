@@ -61,6 +61,7 @@ jobs:
           git add ./now.txt
           git commit -m "fix(release): added libs for linux"
           git branch -av
+          git tag -f "$BRANCH_NAME"
           git push
 
 
@@ -73,10 +74,10 @@ jobs:
 
       - name: Checkout branch
         run: |
+          git pull && git checkout "$BRANCH_NAME" && git pull
+          git submodule update --init --recursive
+          git branch -av
           find .
-#          git pull && git checkout "$BRANCH_NAME" && git pull
-#          git submodule update --init --recursive
-#          git branch -av
 
       - name: Create Release
         id: create_release
