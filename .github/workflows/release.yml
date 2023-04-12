@@ -86,10 +86,10 @@ jobs:
         with:
           tag_name: ${{ github.event.inputs.version }}
           release_name: ${{ github.event.inputs.version }}
-          # body: |
-          #   Changes in this Release
-          #   - First Change
-          #   - Second Change
+          body: |
+            Changes in this Release
+            - First Change
+            - Second Change
           draft: false
           prerelease: false
 
