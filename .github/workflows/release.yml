@@ -73,10 +73,10 @@ jobs:
 
       - name: Checkout branch
         run: |
+          find .
 #          git pull && git checkout "$BRANCH_NAME" && git pull
 #          git submodule update --init --recursive
 #          git branch -av
-          find .
 
       - name: Create Release
         id: create_release
