@@ -68,7 +68,7 @@ jobs:
           git push -f
           git push --tags -f
           git rev-parse HEAD
-          echo "{commit_hash}=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+          echo "{commit_hash}={$(git rev-parse HEAD)}" >> $GITHUB_OUTPUT
           echo "hash=" "${{ needs.build-linux.outputs.commit_hash  }}"
           echo "tag" "${{ github.ref }}" # refs/heads/main
           echo "name" "${{ github.ref_name }}" # main
