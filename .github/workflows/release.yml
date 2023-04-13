@@ -83,7 +83,7 @@ jobs:
           echo "GITHUB_HEAD_REF" "$GITHUB_HEAD_REF"
           echo "tag" "${{ github.ref }}" # refs/heads/main
           echo "name" "${{ github.ref_name }}" # main
-          find .
+          ls -al ./now.txt
 
       - name: Create Release
         id: create_release
