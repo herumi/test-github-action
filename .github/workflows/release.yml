@@ -65,7 +65,7 @@ jobs:
           git push
           git rev-parse HEAD
           echo "{commit_hash}=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
-          echo "hash=" "${{ steps.create_release.outputs.commit_hash }}"
+          echo "hash=" "${{ needs.build-linux.outputs.commit_hash  }}"
           echo "GITHUB_HEAD_REF" "$GITHUB_HEAD_REF"
           echo "tag" "${{ github.ref }}" # refs/heads/main
           echo "name" "${{ github.ref_name }}" # main
@@ -84,7 +84,8 @@ jobs:
           token: "${{ secrets.GITHUB_TOKEN }}"
 #          tag_name: "${{ github.ref_name }}" # main
 #          tag_name: "${{ github.ref }}" # refs/heads/main
-          tag_name: "$BRANCH_NAME" # main
+#          tag_name: "$BRANCH_NAME" # main
+          tag_name: "release-${{ github.event.inputs.version }}"
           prerelease: false
           target_commitish: "${{ needs.build-linux.outputs.commit_hash }}"
 #          target_commitish: "${{ github.ref }}"
