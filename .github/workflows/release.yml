@@ -80,7 +80,6 @@ jobs:
           git branch -av
           git rev-parse HEAD
           echo "{commit_hash}=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
-          echo "commit_hash=" "${{ steps.checkout_branch.outputs.commit_hash }}"
           echo "GITHUB_HEAD_REF" "$GITHUB_HEAD_REF"
           echo "tag" "${{ github.ref }}" # refs/heads/main
           echo "name" "${{ github.ref_name }}" # main
@@ -92,10 +91,10 @@ jobs:
         with:
           token: "${{ secrets.GITHUB_TOKEN }}"
 #          tag_name: "${{ github.ref_name }}" # main
-          tag_name: "${{ github.ref }}" # release-v1.0.5
+          tag_name: "${{ github.ref }}" # refs/heads/main
 #          tag_name: "$BRANCH_NAME" # main
           prerelease: false
-#          target_commitish: "${{ steps.checkout_branch.outputs.commit_hash }}"
+          target_commitish: "${{ steps.create_release.outputs.commit_hash }}"
 #          target_commitish: "${{ github.ref }}"
 #          files: |
 #            *.a
