@@ -79,7 +79,7 @@ jobs:
           git submodule update --init --recursive
           git branch -av
           git rev-parse HEAD
-          echo "::set-output commit_hash=$(git rev-parse HEAD)"
+          echo "{commit_hash}=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
           echo "commit_hash=" "${{ steps.checkout_branch.outputs.commit_hash }}"
           echo "GITHUB_HEAD_REF" "$GITHUB_HEAD_REF"
           echo "tag" "${{ github.ref }}" # refs/heads/main
