@@ -79,6 +79,7 @@ jobs:
           git branch -av
           git rev-parse HEAD
           echo "GITHUB_HEAD_REF" "$GITHUB_HEAD_REF"
+          echo "tag" "${{ github.ref }}"
           find .
 
       - name: Create Release
@@ -86,6 +87,7 @@ jobs:
         uses: "softprops/action-gh-release@v1"
         with:
           token: "${{ secrets.GITHUB_TOKEN }}"
+          tag: "${{ github.ref }}"
           prerelease: false
 #          target_commitish:
 #          files: |
