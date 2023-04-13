@@ -106,5 +106,5 @@ jobs:
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
-          git pull && git push origin -d "release-${{ github.event.inputs.version }}"
+          git pull && git push origin -d "RELEASE_BUILD" && git push origin -d "RELEASE_BUILD_ADD"
 
