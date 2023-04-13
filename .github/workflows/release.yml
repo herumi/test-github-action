@@ -70,7 +70,6 @@ jobs:
           git rev-parse HEAD
           echo "{commit_hash}=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
           echo "hash=" "${{ needs.build-linux.outputs.commit_hash  }}"
-          echo "GITHUB_HEAD_REF" "$GITHUB_HEAD_REF"
           echo "tag" "${{ github.ref }}" # refs/heads/main
           echo "name" "${{ github.ref_name }}" # main
 
@@ -106,5 +105,5 @@ jobs:
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
-          git pull && git push origin -d "RELEASE_BUILD" && git push origin -d "RELEASE_BUILD_ADD"
+#          git pull && git push origin -d "RELEASE_BUILD" && git push origin -d "RELEASE_BUILD_ADD"
 
