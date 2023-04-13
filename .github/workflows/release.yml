@@ -77,16 +77,17 @@ jobs:
           git pull && git checkout "$BRANCH_NAME" && git pull
           git submodule update --init --recursive
           git branch -av
+          git rev-parse HEAD
+          echo "GITHUB_HEAD_REF" "$GITHUB_HEAD_REF"
           find .
 
       - name: Create Release
         id: create_release
-        uses: "marvinpinto/action-automatic-releases@latest"
+        uses: "softprops/action-gh-release@v1"
         with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "latest"
-          title: "release-${{ github.event.inputs.version }}"
+          token: "${{ secrets.GITHUB_TOKEN }}"
           prerelease: false
+#          target_commitish:
 #          files: |
 #            *.a
 #            *.txt
