@@ -40,6 +40,8 @@ jobs:
   build-linux:
     runs-on: ubuntu-latest
     needs: create-branch
+    outputs:
+      commit_hash: ${{ steps.build-linux.outputs.commit_hash }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -50,6 +52,7 @@ jobs:
           git submodule update --init --recursive
 
       - name: Build linux
+        id: build-linux
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
         run: |
