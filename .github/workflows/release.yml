@@ -42,6 +42,7 @@ jobs:
     needs: create-branch
     outputs:
       commit_hash: ${{ steps.build-linux.outputs.commit_hash }}
+      HASH: ${{ steps.build-linux.outputs.HASH }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -55,7 +56,6 @@ jobs:
         id: build-linux
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
-          HASH: ${{ steps.build-linux.outputs.HASH }}
         run: |
           make
 
@@ -91,7 +91,7 @@ jobs:
           token: "${{ secrets.GITHUB_TOKEN }}"
           tag_name: "release-${{ github.event.inputs.version }}"
           prerelease: false
-          target_commitish: "${{ steps.build-linux.outputs.HASH }}"
+          target_commitish: "${{ needs.build-linux.outputs.HASH }}"
 #          target_commitish: "${{ env.commit_hash }}"
 #          target_commitish: "${{ github.ref }}"
 #          files: |
