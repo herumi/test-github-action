@@ -40,8 +40,8 @@ jobs:
   build-linux:
     runs-on: ubuntu-latest
     needs: create-branch
-#    outputs:
-#      commit_hash: ${{ steps.build-linux.outputs.commit_hash }}
+    outputs:
+      commit_hash: ${{ steps.build-linux.outputs.commit_hash }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
