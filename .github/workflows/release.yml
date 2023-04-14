@@ -65,7 +65,7 @@ jobs:
           git commit -m "fix(release): added libs for linux"
           git branch -av
           git rev-parse HEAD
-          echo "commit_hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+          echo "commit_hash=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           git push
       - name: show
         run: |
