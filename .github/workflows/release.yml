@@ -65,12 +65,12 @@ jobs:
           git add ./now.txt
           git commit -m "fix(release): added libs for linux"
           git branch -av
-          git push
           git rev-parse HEAD
           echo "{commit_hash}={$(git rev-parse HEAD)}" >> $GITHUB_ENV
-          echo "{HASH}={$(git rev-parse --hosrt HEAD)}" >> $GITHUB_OUTPUT
+          git push
+      - name: show
+        run: |
           echo "hash=" "${{ env.commit_hash  }}"
-          echo "HASH=" "${{ steps.build-linux.outputs.HASH }}"
           echo "tag" "${{ github.ref }}" # refs/heads/main
           echo "name" "${{ github.ref_name }}" # main
 
