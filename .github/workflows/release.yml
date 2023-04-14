@@ -30,12 +30,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
         run: |
-          git checkout -b RELEASE_BUILD
+          git checkout -b "$BRANCH_NAME"
           git submodule update --init --recursive
 
           git config user.name github-actions
           git config user.email github-actions@github.com
-          git push --set-upstream origin RELEASE_BUILD
+          git push --set-upstream origin "$BRANCH_NAME"
 
   build-linux:
     runs-on: ubuntu-latest
@@ -48,7 +48,7 @@ jobs:
 
       - name: Checkout branch
         run: |
-          git pull && git checkout RELEASE_BUILD && git pull
+          git pull && git checkout "$BRANCH_NAME" && git pull
           git submodule update --init --recursive
 
       - name: Build linux
@@ -64,12 +64,10 @@ jobs:
           git add ./now.txt
           git commit -m "fix(release): added libs for linux"
           git branch -av
-          git tag -f "RELEASE_BUILD_ADD"
-          git push -f
-          git push --tags -f
+          git push
           git rev-parse HEAD
-          echo "{commit_hash}={$(git rev-parse HEAD)}" >> $GITHUB_OUTPUT
-          echo "hash=" "${{ needs.build-linux.outputs.commit_hash  }}"
+          echo "{commit_hash}={$(git rev-parse HEAD)}" >> $GITHUB_ENV
+          echo "hash=" "${{ env.commit_hash  }}"
           echo "tag" "${{ github.ref }}" # refs/heads/main
           echo "name" "${{ github.ref_name }}" # main
 
@@ -90,8 +88,7 @@ jobs:
           token: "${{ secrets.GITHUB_TOKEN }}"
           tag_name: "release-${{ github.event.inputs.version }}"
           prerelease: false
-#          target_commitish: RELEASE_BUILD_ADD
-          target_commitish: "${{ needs.build-linux.outputs.commit_hash }}"
+          target_commitish: "${{ env.commit_hash }}"
 #          target_commitish: "${{ github.ref }}"
 #          files: |
 #            *.a
@@ -108,5 +105,5 @@ jobs:
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
-#          git pull && git push origin -d "RELEASE_BUILD" && git push origin -d "RELEASE_BUILD_ADD"
+#          git pull && git push origin -d "$BRANCH_NAME"
 
