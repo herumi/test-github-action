@@ -73,6 +73,7 @@ jobs:
     needs: build-linux
     outputs:
       hash: ${{ steps.set-hash.outputs.hash }}
+      hash2: ${{ steps.create-release.outputs.hash }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -92,10 +93,11 @@ jobs:
          echo "hash1" "${{ needs.build-linux.outputs.commit_hash }}"
          echo "hash2" "${{ steps.create-release.outputs.hash }}"
          echo "hash3" "${{ needs.create-release.outputs.hash }}"
+         echo "hash4" "${{ needs.create-release.outputs.hash2 }}"
 
       - name: Create Release
         id: create_release
-        run: gh release create "release-${{ github.event.inputs.version }}" -t "${{ github.event.inputs.version }}" --target "${{ steps.create-release.outputs.hash }}"
+        run: gh release create "release-${{ github.event.inputs.version }}" -t "${{ github.event.inputs.version }}" --target "${{ steps.create-release.outputs.hash2 }}"
         env:
           GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 
