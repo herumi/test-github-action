@@ -72,7 +72,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-linux
     outputs:
-      hash: ${{ steps.create-release.outputs.hash }}
+      hash: ${{ steps.set-hash.outputs.hash }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -91,6 +91,7 @@ jobs:
         run: |
          echo "hash1" "${{ needs.build-linux.outputs.commit_hash }}"
          echo "hash2" "${{ steps.create-release.outputs.hash }}"
+         echo "hash3" "${{ needs.create-release.outputs.hash }}"
 
       - name: Create Release
         id: create_release
