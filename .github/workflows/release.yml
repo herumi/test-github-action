@@ -55,6 +55,7 @@ jobs:
         id: build-linux
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+          HASH: ${{ steps.build-linux.outputs.HASH }}
         run: |
           make
 
@@ -67,7 +68,9 @@ jobs:
           git push
           git rev-parse HEAD
           echo "{commit_hash}={$(git rev-parse HEAD)}" >> $GITHUB_ENV
+          echo "{HASH}={$(git rev-parse --hosrt HEAD)}" >> $GITHUB_OUTPUT
           echo "hash=" "${{ env.commit_hash  }}"
+          echo "HASH=" "${{ steps.build-linux.outputs.HASH }}"
           echo "tag" "${{ github.ref }}" # refs/heads/main
           echo "name" "${{ github.ref_name }}" # main
 
@@ -88,7 +91,8 @@ jobs:
           token: "${{ secrets.GITHUB_TOKEN }}"
           tag_name: "release-${{ github.event.inputs.version }}"
           prerelease: false
-          target_commitish: "${{ env.commit_hash }}"
+          target_commitish: "${{ steps.build-linux.outputs.HASH }}"
+#          target_commitish: "${{ env.commit_hash }}"
 #          target_commitish: "${{ github.ref }}"
 #          files: |
 #            *.a
