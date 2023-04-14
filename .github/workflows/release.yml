@@ -74,6 +74,7 @@ jobs:
     outputs:
       hash: ${{ steps.set-hash.outputs.hash }}
       hash2: ${{ steps.create-release.outputs.hash }}
+      hash3: ${{ steps.create-release.outputs.hash }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -87,17 +88,18 @@ jobs:
           git branch -av
           git rev-parse HEAD
           echo "hash=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "hash3=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
           git push
       - name: show
         run: |
          echo "hash1" "${{ needs.build-linux.outputs.commit_hash }}"
          echo "hash2" "${{ steps.create-release.outputs.hash }}"
-         echo "hash3" "${{ needs.create-release.outputs.hash }}"
-         echo "hash4" "${{ needs.create-release.outputs.hash2 }}"
+         echo "hash3" "${{ steps.set-hash.outputs.hash }}"
+         echo "hash4" "${{ env.hash3 }}"
 
       - name: Create Release
         id: create_release
-        run: gh release create "release-${{ github.event.inputs.version }}" -t "${{ github.event.inputs.version }}" --target "${{ steps.create-release.outputs.hash2 }}"
+        run: gh release create "release-${{ github.event.inputs.version }}" -t "${{ github.event.inputs.version }}" --target "${{ steps.set-hash.outputs.hash }}"
         env:
           GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 
