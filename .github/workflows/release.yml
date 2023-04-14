@@ -67,11 +67,6 @@ jobs:
           git rev-parse HEAD
           echo "commit_hash=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           git push
-      - name: show
-        run: |
-          echo "hash=" "${{ env.commit_hash  }}"
-          echo "tag" "${{ github.ref }}" # refs/heads/main
-          echo "name" "${{ github.ref_name }}" # main
 
   create-release:
     runs-on: ubuntu-latest
@@ -81,19 +76,13 @@ jobs:
         uses: actions/checkout@v3
       - name: show
         run: |
-         echo "aaa" "${{ needs.build-linux.outputs.commit_hash }}"
+         echo "hash" "${{ needs.build-linux.outputs.commit_hash }}"
 
       - name: Create Release
         id: create_release
         run: gh release create "release-${{ github.event.inputs.version }}" --target "${{ needs.build-linux.outputs.commit_hash }}"
         env:
           GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-#        uses: "softprops/action-gh-release@v1"
-#        with:
-#          token: "${{ secrets.GITHUB_TOKEN }}"
-#          tag_name: "release-${{ github.event.inputs.version }}"
-#          prerelease: false
-#          target_commitish: "${{ needs.build-linux.outputs.commit_hash }}"
 
   delete-branch:
     runs-on: ubuntu-latest
