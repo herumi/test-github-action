@@ -40,8 +40,8 @@ jobs:
   build-linux:
     runs-on: ubuntu-latest
     needs: create-branch
-    outputs:
-      commit_hash: ${{ steps.build-linux.outputs.commit_hash }}
+#    outputs:
+#      commit_hash: ${{ steps.build-linux.outputs.commit_hash }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -85,15 +85,15 @@ jobs:
 
       - name: Create Release
         id: create_release
-        uses: "softprops/action-gh-release@v1"
-        with:
-          token: "${{ secrets.GITHUB_TOKEN }}"
-          tag_name: "release-${{ github.event.inputs.version }}"
-          prerelease: false
-          target_commitish: "${{ needs.build-linux.outputs.commit_hash }}"
-#          files: |
-#            *.a
-#            *.txt
+        run: gh release create "release-${{ github.event.inputs.version }}" --target "${{ needs.build-linux.outputs.commit_hash }}"
+        env:
+          GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+#        uses: "softprops/action-gh-release@v1"
+#        with:
+#          token: "${{ secrets.GITHUB_TOKEN }}"
+#          tag_name: "release-${{ github.event.inputs.version }}"
+#          prerelease: false
+#          target_commitish: "${{ needs.build-linux.outputs.commit_hash }}"
 
   delete-branch:
     runs-on: ubuntu-latest
@@ -106,5 +106,5 @@ jobs:
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
-#          git pull && git push origin -d "$BRANCH_NAME"
+          git pull && git push origin -d "$BRANCH_NAME"
 
