@@ -1,15 +1,10 @@
-name: Release
+name: test
+on: [push]
 
 jobs:
-  build-linux:
+  build:
     runs-on: ubuntu-latest
-    needs: create-branch
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Build linux
-        env:
-        run: |
-          make
-          cat now.txt
+    - name: make
+    - uses: actions/checkout@v3
+    - run: make && cat now.txt
