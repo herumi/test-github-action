@@ -21,6 +21,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
     - run: |
+        git pull
+        git checkout dev 2>/dev/null || git checkout -b dev
         git config user.name github-actions
         git config user.email github-actions@github.com
         git clone https://github.com/emscripten-core/emsdk.git
@@ -42,5 +44,5 @@ jobs:
         if [[ $changes -gt 0 ]]
         then
           git commit -m "build: update mcl_c.js"
-          git push
+          git push origin dev
         fi
