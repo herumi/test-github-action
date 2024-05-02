@@ -1,0 +1,49 @@
+name: build
+
+permissions:
+  contents: write
+  repository-projects: write
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'build/tag: vX.Y.Z'
+        required: true
+
+jobs:
+  build:
+    name: build-wasm
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: node
+      uses: actions/setup-node@v4
+      with:
+        node-version: "20"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+    - run: |
+        git config user.name github-actions
+        git config user.email github-actions@github.com
+        git clone https://github.com/emscripten-core/emsdk.git
+        cd emsdk/
+        ./emsdk install latest
+        ./emsdk activate latest
+        source ./emsdk_env.sh
+        emcc -v
+        cd ..
+        git submodule update --init --recursive
+        make clean
+        npm install -D @types/node
+        npm run build:mcl_c.js
+        npm run build:browser
+        npm test
+
+        git add -f src/mcl_c.js browser/mcl.js
+        changes=$(git diff --staged --numstat | wc -l)
+        if [[ $changes -gt 0 ]]
+        then
+          git commit -m "build: update mcl_c.js"
+          git push
+        fi
