@@ -39,7 +39,7 @@ jobs:
           git config user.email github-actions@github.com
           git push --set-upstream origin release
   build-macos:
-    runs-on: macos-14
+    runs-on: macos-13
     needs: create-branch
     steps:
       - name: Checkout code
@@ -48,7 +48,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: ^1.20
+          go-version: '1.18.x'
 
       - name: Build darwin
         env:
