@@ -33,6 +33,40 @@ jobs:
         where g++ 2>nul && g++ --version || echo "g++ not found"
       shell: cmd
 
+    - name: Install Visual Studio Build Tools for ARM64
+      run: |
+        Write-Host "=== Installing Visual Studio Build Tools for ARM64 ==="
+        
+        # Visual Studio Installerを使用してARM64用のBuild Toolsをインストール
+        $vsInstaller = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vs_installer.exe"
+        
+        if (Test-Path $vsInstaller) {
+          Write-Host "Installing ARM64 C++ build tools..."
+          & $vsInstaller install --quiet --norestart --add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Component.VC.Tools.ARM64
+          
+          # インストール完了を待つ
+          Start-Sleep -Seconds 30
+          
+          # 環境変数を更新
+          $vcvarsPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
+          if (Test-Path $vcvarsPath) {
+            Write-Host "Setting up VC environment variables..."
+            cmd /c "`"$vcvarsPath`" && set" | ForEach-Object {
+              if ($_ -match "^(.*?)=(.*)$") {
+                $name = $matches[1]
+                $value = $matches[2]
+                [Environment]::SetEnvironmentVariable($name, $value, "Process")
+              }
+            }
+          }
+        } else {
+          Write-Host "Visual Studio Installer not found, trying alternative installation..."
+          # 代替手段としてChocolateyを使用
+          choco install visualstudio2022buildtools -y
+          choco install visualstudio2022-workload-vctools -y
+        }
+      shell: powershell
+
     - name: Install Clang/LLVM (if needed)
       run: |
         # Chocolateyでclangをインストール（必要に応じて）
@@ -84,27 +118,36 @@ jobs:
 
     - name: Compile with Visual Studio (if available)
       run: |
-        # Visual Studio Build Toolsを使用
-        if (Get-Command cl -ErrorAction SilentlyContinue) {
-          Write-Host "=== Compiling with MSVC ==="
-          cl /EHsc /std:c++17 /O2 hello.cpp /Fe:hello_msvc.exe
+        # ARM64用のVisual Studio Build Toolsを使用
+        Write-Host "=== Compiling with MSVC for ARM64 ==="
+        
+        # ARM64用のvcvarsを設定
+        $vcvarsPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
+        if (Test-Path $vcvarsPath) {
+          Write-Host "Setting up ARM64 VC environment..."
+          cmd /c "`"$vcvarsPath`" && cl /EHsc /std:c++17 /O2 /MACHINE:ARM64 hello.cpp /Fe:hello_msvc.exe"
           if ($LASTEXITCODE -eq 0) {
-            Write-Host "MSVC compilation successful"
+            Write-Host "MSVC ARM64 compilation successful"
+          } else {
+            Write-Host "MSVC ARM64 compilation failed"
           }
         } else {
-          Write-Host "MSVC not available"
+          Write-Host "ARM64 VC environment not found"
         }
       shell: powershell
       continue-on-error: true
 
     - name: Compile with Clang++ (if available)
       run: |
-        # Clang++を使用
+        # ARM64用のClang++を使用
         if (Get-Command clang++ -ErrorAction SilentlyContinue) {
-          Write-Host "=== Compiling with Clang++ ==="
-          clang++ -std=c++17 -O2 -o hello_clang.exe hello.cpp
+          Write-Host "=== Compiling with Clang++ for ARM64 ==="
+          # ARM64ターゲットを明示的に指定
+          clang++ -std=c++17 -O2 -target aarch64-pc-windows-msvc -o hello_clang.exe hello.cpp
           if ($LASTEXITCODE -eq 0) {
-            Write-Host "Clang++ compilation successful"
+            Write-Host "Clang++ ARM64 compilation successful"
+          } else {
+            Write-Host "Clang++ ARM64 compilation failed"
           }
         } else {
           Write-Host "Clang++ not available"
@@ -163,13 +206,16 @@ jobs:
         echo     return 0; >> perf_test.cpp
         echo } >> perf_test.cpp
 
-        # コンパイルして実行
-        if (Get-Command cl -ErrorAction SilentlyContinue) {
-          cl /EHsc /std:c++17 /O2 perf_test.cpp /Fe:perf_test.exe
+        # ARM64用にコンパイルして実行
+        $vcvarsPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
+        if (Test-Path $vcvarsPath) {
+          cmd /c "`"$vcvarsPath`" && cl /EHsc /std:c++17 /O2 /MACHINE:ARM64 perf_test.cpp /Fe:perf_test.exe"
           if ($LASTEXITCODE -eq 0) {
-            Write-Host "Performance test (MSVC):"
+            Write-Host "Performance test (MSVC ARM64):"
             .\perf_test.exe
           }
+        } else {
+          Write-Host "ARM64 VC environment not available for performance test"
         }
       shell: powershell
 
