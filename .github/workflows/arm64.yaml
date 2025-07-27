@@ -180,6 +180,7 @@ jobs:
     - name: Execute compiled binaries
       run: |
         echo "=== Execution Results ==="
+        .\bls12_test.exe
 
         if (Test-Path "hello_msvc.exe") {
           Write-Host "--- MSVC Binary Output ---"
