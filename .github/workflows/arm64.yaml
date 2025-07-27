@@ -8,7 +8,6 @@ on:
 
 jobs:
   build-native-arm64-windows:
-    # ネイティブARM64 Windows環境を使用
     runs-on: windows-11-arm
 
     steps:
@@ -26,7 +25,6 @@ jobs:
 
     - name: Setup development environment
       run: |
-        # Visual Studio Build Toolsまたはclangの確認
         echo "=== Available Compilers ==="
         where cl 2>nul && cl 2>&1 | findstr "Version" || echo "cl.exe not found"
         where clang++ 2>nul && clang++ --version || echo "clang++ not found"
@@ -35,46 +33,15 @@ jobs:
 
     - name: Install Clang/LLVM (if needed)
       run: |
-        # Chocolateyでclangをインストール（必要に応じて）
         if (!(Get-Command clang++ -ErrorAction SilentlyContinue)) {
           Write-Host "Installing LLVM/Clang..."
           choco install llvm -y
-          # PATHを更新
           $env:PATH = "C:\Program Files\LLVM\bin;$env:PATH"
           echo "C:\Program Files\LLVM\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
         } else {
           Write-Host "Clang++ already available"
         }
       shell: powershell
-
-    - name: Create Hello World source code
-      run: |
-        echo #include ^<iostream^> > hello.cpp
-        echo #include ^<string^> >> hello.cpp
-        echo. >> hello.cpp
-        echo int main^(^) { >> hello.cpp
-        echo     std::cout ^<^< "Hello, Native ARM64 World!" ^<^< std::endl; >> hello.cpp
-        echo. >> hello.cpp
-        echo     // アーキテクチャ情報を表示 >> hello.cpp
-        echo     #ifdef _M_ARM64 >> hello.cpp
-        echo         std::cout ^<^< "Architecture: ARM64 (MSVC)" ^<^< std::endl; >> hello.cpp
-        echo     #elif defined(__aarch64__) >> hello.cpp
-        echo         std::cout ^<^< "Architecture: AArch64 (GCC/Clang)" ^<^< std::endl; >> hello.cpp
-        echo     #else >> hello.cpp
-        echo         std::cout ^<^< "Architecture: Unknown" ^<^< std::endl; >> hello.cpp
-        echo     #endif >> hello.cpp
-        echo. >> hello.cpp
-        echo     // コンパイラ情報を表示 >> hello.cpp
-        echo     #ifdef _MSC_VER >> hello.cpp
-        echo         std::cout ^<^< "Compiler: MSVC " ^<^< _MSC_VER ^<^< std::endl; >> hello.cpp
-        echo     #elif defined(__clang__) >> hello.cpp
-        echo         std::cout ^<^< "Compiler: Clang " ^<^< __clang_major__ ^<^< "." >> hello.cpp
-        echo                   ^<^< __clang_minor__ ^<^< "." ^<^< __clang_patchlevel__ ^<^< std::endl; >> hello.cpp
-        echo     #endif >> hello.cpp
-        echo. >> hello.cpp
-        echo     return 0; >> hello.cpp
-        echo } >> hello.cpp
-      shell: cmd
 
     - name: Display source code
       run: |
@@ -84,7 +51,6 @@ jobs:
 
     - name: Compile with Visual Studio (if available)
       run: |
-        # Visual Studio Build Toolsを使用
         if (Get-Command cl -ErrorAction SilentlyContinue) {
           Write-Host "=== Compiling with MSVC ==="
           cl /EHsc /std:c++17 /O2 hello.cpp /Fe:hello_msvc.exe
@@ -99,7 +65,6 @@ jobs:
 
     - name: Compile with Clang++ (if available)
       run: |
-        # Clang++を使用
         if (Get-Command clang++ -ErrorAction SilentlyContinue) {
           Write-Host "=== Compiling with Clang++ ==="
           clang++ -std=c++17 -O2 -o hello_clang.exe hello.cpp
@@ -144,71 +109,3 @@ jobs:
         }
       shell: powershell
 
-    - name: Performance test
-      run: |
-        echo "=== Simple Performance Test ==="
-
-        # 簡単な性能テスト用のコードを作成
-        echo #include ^<iostream^> > perf_test.cpp
-        echo #include ^<chrono^> >> perf_test.cpp
-        echo #include ^<vector^> >> perf_test.cpp
-        echo. >> perf_test.cpp
-        echo int main^(^) { >> perf_test.cpp
-        echo     auto start = std::chrono::high_resolution_clock::now^(^); >> perf_test.cpp
-        echo     std::vector^<int^> vec^(1000000^); >> perf_test.cpp
-        echo     for^(int i = 0; i ^< 1000000; ++i^) vec[i] = i * i; >> perf_test.cpp
-        echo     auto end = std::chrono::high_resolution_clock::now^(^); >> perf_test.cpp
-        echo     auto duration = std::chrono::duration_cast^<std::chrono::milliseconds^>^(end - start^); >> perf_test.cpp
-        echo     std::cout ^<^< "Performance test completed in " ^<^< duration.count^(^) ^<^< " ms" ^<^< std::endl; >> perf_test.cpp
-        echo     return 0; >> perf_test.cpp
-        echo } >> perf_test.cpp
-
-        # コンパイルして実行
-        if (Get-Command cl -ErrorAction SilentlyContinue) {
-          cl /EHsc /std:c++17 /O2 perf_test.cpp /Fe:perf_test.exe
-          if ($LASTEXITCODE -eq 0) {
-            Write-Host "Performance test (MSVC):"
-            .\perf_test.exe
-          }
-        }
-      shell: powershell
-
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: arm64-windows-binaries
-        path: |
-          hello_*.exe
-          perf_test.exe
-          hello.cpp
-          perf_test.cpp
-
-    - name: Create build summary
-      run: |
-        echo "# Native ARM64 Windows Build Summary" >> $env:GITHUB_STEP_SUMMARY
-        echo "" >> $env:GITHUB_STEP_SUMMARY
-        echo "## ✅ ネイティブARM64 Windows環境での実行完了" >> $env:GITHUB_STEP_SUMMARY
-        echo "" >> $env:GITHUB_STEP_SUMMARY
-        echo "### 実行環境:" >> $env:GITHUB_STEP_SUMMARY
-        echo "- **ランナー**: windows-11-arm (ネイティブARM64)" >> $env:GITHUB_STEP_SUMMARY
-        echo "- **アーキテクチャ**: ARM64/AArch64" >> $env:GITHUB_STEP_SUMMARY
-        echo "- **OS**: Windows 11 ARM64" >> $env:GITHUB_STEP_SUMMARY
-        echo "" >> $env:GITHUB_STEP_SUMMARY
-        echo "### コンパイル結果:" >> $env:GITHUB_STEP_SUMMARY
-
-        if (Test-Path "hello_msvc.exe") {
-          echo "- ✅ MSVC: コンパイル・実行成功" >> $env:GITHUB_STEP_SUMMARY
-        } else {
-          echo "- ❌ MSVC: 利用不可" >> $env:GITHUB_STEP_SUMMARY
-        }
-
-        if (Test-Path "hello_clang.exe") {
-          echo "- ✅ Clang++: コンパイル・実行成功" >> $env:GITHUB_STEP_SUMMARY
-        } else {
-          echo "- ❌ Clang++: 利用不可" >> $env:GITHUB_STEP_SUMMARY
-        }
-
-        echo "" >> $env:GITHUB_STEP_SUMMARY
-        echo "### 備考:" >> $env:GITHUB_STEP_SUMMARY
-        echo "クロスコンパイルではなく、ネイティブARM64環境でのコンパイル・実行を実現。" >> $env:GITHUB_STEP_SUMMARY
-      shell: powershell
