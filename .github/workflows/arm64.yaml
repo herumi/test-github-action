@@ -26,7 +26,7 @@ jobs:
     - name: Execute bls12_test.exe
       run: |
         echo "=== bls12_test.exe ==="
-        .\bls12_test.exe
+        .\pairing.exe
 
     - name: Setup development environment
       run: |
