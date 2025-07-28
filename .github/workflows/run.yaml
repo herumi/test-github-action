@@ -1,0 +1,30 @@
+name: Native ARM64 Windows Build and Test
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build-native-arm64-windows:
+    runs-on: windows-11-arm
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Display system information
+      run: |
+        echo "=== System Information ==="
+        systeminfo | findstr /B /C:"OS Name" /C:"OS Version" /C:"System Type"
+        echo "Processor: %PROCESSOR_ARCHITECTURE%"
+        echo "Processor Identifier: %PROCESSOR_IDENTIFIER%"
+        wmic cpu get name
+      shell: cmd
+
+    - name: Execute bls12_test.exe
+      run: |
+        echo "=== bls12_test.exe ==="
+        .\bls12_test.exe
+
