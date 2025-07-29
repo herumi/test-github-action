@@ -27,4 +27,5 @@ jobs:
       run: |
         echo "=== bls12_test.exe ==="
         .\bls12_test.exe
+        .\bn_c384_256_test.exe
 
