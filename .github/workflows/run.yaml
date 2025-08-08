@@ -20,7 +20,8 @@ jobs:
         systeminfo | findstr /B /C:"OS Name" /C:"OS Version" /C:"System Type"
         echo "Processor: %PROCESSOR_ARCHITECTURE%"
         echo "Processor Identifier: %PROCESSOR_IDENTIFIER%"
-        wmic cpu get name
+        #wmic cpu get name
+        powershell -Command "Get-CimInstance -ClassName Win32_Processor"
       shell: cmd
 
     - name: Execute bls12_test.exe
