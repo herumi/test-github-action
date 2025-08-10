@@ -29,4 +29,7 @@ jobs:
         echo "=== bls12_test.exe ==="
         .\bls12_test.exe
         .\bn_c384_256_test.exe
+        git clone -b arm64-cross --depth 1 https://github.com/herumi/mcl
+        cd mcl
+        cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=cmake/arm64-windows-toolchain.cmake -A arm64
 
